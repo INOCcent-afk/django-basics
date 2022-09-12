@@ -1,20 +1,14 @@
-import imp
-from rest_framework import generics, mixins, permissions, authentication
-
-from .permissions import isStaffEditorPermission
-from api.authentication import TokenAuthentication
+from rest_framework import generics
+from api.mixins import StaffEditorPermissionMixin
 from .models import Product
 from .serializers import ProductSerializer
 
 # Create your views here.
 
 
-class ProductListCreateApiView(generics.ListCreateAPIView):
+class ProductListCreateApiView(StaffEditorPermissionMixin, generics.ListCreateAPIView):
     queryset = Product.objects.all()
     serializer_class = ProductSerializer
-    authentication_classes = [
-        authentication.SessionAuthentication, TokenAuthentication]
-    permission_classes = [permissions.IsAdminUser, isStaffEditorPermission]
 
     def perform_create(self, serializer):
         title = serializer.validated_data.get('title')
@@ -58,36 +52,3 @@ class ProductDeleteAPIView(generics.DestroyAPIView):
 
 
 product_delete_view = ProductDeleteAPIView.as_view()
-
-
-# class ProductMixinView(
-#         mixins.CreateModelMixin,
-#         mixins.ListModelMixin,
-#         mixins.RetrieveModelMixin,
-#         mixins.UpdateModelMixin,
-#         mixins.DestroyModelMixin,
-#         generics.GenericAPIView):
-#     queryset = Product.objects.all()
-#     serializer_class = ProductSerializer
-#     lookup_field = 'pk'
-
-#     def get(self, request, *args, **kwargs):
-#         pk = kwargs.get("pk")
-
-#         if pk is not None:
-#             return self.retrieve(request, *args, **kwargs)
-#         return self.list(request, *args, **kwargs)
-
-#     def post(self, request, *args, **kwargs):
-#         return self.create(request, *args, **kwargs)
-
-#     def perform_create(self, serializer):
-#         title = serializer.validated_data.get('title')
-#         content = serializer.validated_data.get('content') or None
-
-#         if content is None:
-#             content = title
-#         serializer.save(content=content)
-
-
-# product_mixin_view = ProductMixinView.as_view()
